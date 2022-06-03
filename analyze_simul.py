@@ -2,6 +2,7 @@ from collections import Counter
 import sys
 import matplotlib.pyplot as plt
 from matplotlib import colors as mcolors
+import matplotlib.ticker as mticker
 import numpy as np
 
 # ------------------------------------------------------------------------------
@@ -12,7 +13,7 @@ full_dump = False
 states = {
   0: ("Healthy", "C2"),
   1: ("Infected", "C3"),
-  2: ("Dead", "k"),
+  2: ("Deceased", "k"),
   3: ("Recovered", "C0")
 }
 
@@ -47,6 +48,8 @@ percents = {i: 100*counts[i]/num_agents for i in range(num_states)}
 for i in range(num_states):
   name, color = states[i]
   plt.plot(percents[i], color=color, label=name)
+
+plt.gca().yaxis.set_major_formatter(mticker.PercentFormatter())
 
 plt.legend()
 plt.grid(ls=":")

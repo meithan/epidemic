@@ -8,18 +8,15 @@ USER_FLAGS= -O3
 # ==============================================================================
 
 LDFLAGS= 
-CCFLAGS= $(USER_FLAGS)
-PROGRAMS= epidemic
+CCFLAGS=$(USER_FLAGS)
+PROGRAMS=epidemic
 
 # ==============================================================================
 
-epidemic : Disease.h Agent.h epidemic.o
+epidemic : epidemic.o
 	$(COMPILER) $(LDFLAGS) epidemic.o -o epidemic
 
-%.o : %.cpp
-	$(COMPILER) $(CCFLAGS) -c -o $@ $<
-
-%.h : ;
+epidemic.o : Agent.h Disease.h epidemic.cpp
 
 clean :
 	rm -f *.o $(PROGRAMS)

@@ -11,11 +11,10 @@
 #include "Agent.h"
 
 // =====================================================================
-// PROGRAM PARAMETERS
+// SIMULATION PARAMETERS
 
 const int num_agents = 1000000;
 const int base_encounters = 10;
-
 const int num_initially_infected = 100;
 
 const bool simulate_until_no_infected = true;
@@ -29,13 +28,15 @@ const bool full_dump = false;
 // DISEASES
 
 string name = "COVID19";
-double transm_prob = 0.05;
-double duration = 7;
-double contagious_onset = 2;
-double symptoms_onset = 3;
-double severity = 5;
-double fatality_rate = 0.001;
-Disease* disease1 = new Disease(name, transm_prob, duration, contagious_onset, symptoms_onset, severity, fatality_rate);
+// double transm_prob = 0.05;
+double transm_prob = 0.10;
+double latency_period = 2;
+double incubation_period = 3;
+double symptoms_duration = 5;
+double contagious_duration = (incubation_period + symptoms_duration) - latency_period;
+double max_severity = 1;
+double fatality_rate = 0.01;
+Disease* disease1 = new Disease(name, transm_prob, latency_period, contagious_duration, incubation_period, symptoms_duration, max_severity, fatality_rate);
 
 // =====================================================================
 // GLOBALS
@@ -115,7 +116,7 @@ void count_states() {
 
 // ---------------------------------------------------------------------
 
-void print_states() {
+void report_states() {
 
   for (int i = 0; i < num_states; i++) {
     printf("%s: %i (%.1f%%)\n", states_names[i].c_str(), states_counts[i], 100.0*states_counts[i]/num_agents);
@@ -158,7 +159,7 @@ void output_states() {
 
 void socialize_agents() {
 
-  int id, other_id, encounters;
+  int id, other_id, num_encounters;
   Agent* agent;
   Agent* other;
   
@@ -166,7 +167,9 @@ void socialize_agents() {
     agent = agents[id];
     if ((agent->isAlive) && (agent->isContagious)) { 
 
-      for (int i = 0; i <= agent->base_encounters; i++) {
+      num_encounters = agent->get_encounters();
+
+      for (int i = 1; i <= num_encounters; i++) {
 
         // Select another agent at random
         while (true) {
@@ -210,13 +213,13 @@ int main (int argc, char** argv) {
 
   infect_init(num_initially_infected);
 
-  count_states(); print_states();
+  count_states(); report_states();
   output_states();
 
   iteration = 1;
   while (true) {
 
-    printf("----------\nit = %i\n", iteration);
+    printf("----------\nday = %i\n", iteration);
 
     // Make agents socialize (and spread disease)
     socialize_agents();
@@ -226,7 +229,7 @@ int main (int argc, char** argv) {
 
     // Update counts
     count_states();
-    print_states();
+    report_states();
     output_states();
 
     iteration++;
@@ -238,6 +241,11 @@ int main (int argc, char** argv) {
 
   }
 
+  printf("----------\n");
+  
+  int tot_infected = num_agents - states_counts[STATE_HEALTHY];
+  printf("Population infected: %.1f%%\n", 100*(double)tot_infected/num_agents);
+  
   return 0;
 
 }

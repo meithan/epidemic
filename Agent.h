@@ -4,6 +4,7 @@
 #ifndef AGENT_H
 #define AGENT_H
 #include <stdio.h>
+#include <math.h>
 #include "Disease.h"
 #include "utils.h"
 using namespace std;
@@ -30,7 +31,7 @@ class Agent {
   bool isSymptomatic;  // Is the agent symptomatic?
   bool isImmune;       // Is the agent immune?
   Disease* disease;    // The disease this agent has, if any
-  int days_infected;   // Infection day the agent is on
+  double days_infected;   // Infection day the agent is on
   int base_encounters;   // Number of encounters per day when healthy
   
   // Constructor
@@ -60,8 +61,24 @@ class Agent {
     state = STATE_INFECTED;
     days_infected = 0;
     disease = _disease;
-    if (disease->contagious_onset == 0) isContagious = true;
-    if (disease->symptoms_onset == 0) isSymptomatic = true;
+    if (disease->latency_period == 0) isContagious = true;
+    if (disease->incubation_period == 0) isSymptomatic = true;
+  }
+
+  // Determines how many encounters this agent will have, based on
+  // the disease's severity (if any)
+  int get_encounters() {
+    if ((!isInfected) || (!isSymptomatic)) {
+      return base_encounters;
+    } else {
+      // A function going from base_encounters at severity=0
+      // to 0 at severity=10
+      // Simple linear function 
+      // return base_encounters * (1 - disease->severity/10.0);
+      // Quadratic function
+      double severity = disease->get_severity(days_infected);
+      return int(round(base_encounters * (1 - pow(severity/10.0, 2))));
+    }
   }
 
   // Evolves the disease of the agent (if any)
@@ -82,7 +99,7 @@ class Agent {
 
     days_infected++;
 
-    if (days_infected > disease->duration) {
+    if (days_infected > disease->total_duration) {
       
       isInfected = false;
       isContagious = false;
@@ -92,11 +109,11 @@ class Agent {
 
     } else {
 
-      if ((!isContagious) && (days_infected >= disease->contagious_onset)) {
+      if ((!isContagious) && (days_infected >= disease->latency_period)) {
         isContagious = true;
       }
 
-      if ((!isSymptomatic) && (days_infected >= disease->symptoms_onset)) {
+      if ((!isSymptomatic) && (days_infected >= disease->incubation_period)) {
         isSymptomatic = true;
       }
 
