@@ -49,17 +49,14 @@ int main() {
   Disease* variant;
   char variant_name[100];
   double transm, sever;
-
-  FILE* output_file = fopen("landscape.txt", "w");
-  
+ 
   for (transm = p_transm_min; transm <= p_transm_max; transm += p_transm_step) {
 
     for (sever = p_severity_min; sever <= p_severity_max; sever += p_severity_step) {
-      
-      printf("transm=%.3f sever=%.0f\n", transm, sever);   
-      fprintf(output_file, "%f %f\n", transm, sever);
-      sprintf(variant_name, "COVID19 variant transm=%.3f sever=%.0f", transm, sever);
 
+      printf("transm=%.3f sever=%.0f", transm, sever);   
+
+      sprintf(variant_name, "COVID19 variant transm=%.3f sever=%.0f", transm, sever);
       variant = new Disease(variant_name, transm, latency_period, contagious_duration, incubation_period, symptoms_duration, sever, fatality_rate);
 
       ep = new Epidemic(num_agents, num_initially_infected, base_encounters, states_fname, full_dump);
@@ -71,14 +68,17 @@ int main() {
       
       int tot_infected = num_agents - ep->states_counts[STATE_HEALTHY];
       double pct_infected = 100*(double)tot_infected/num_agents;
-      printf("Population infected: %i : %.1f%%\n", tot_infected, pct_infected);
 
+      fprintf(output_file, " %.1f%%\n", pct_infected);
+
+      FILE* output_file = fopen("landscape.txt", "a");
+      fprintf(output_file, "%f %f %f\n", transm, sever, pct_infected);
+      fclose(output_file);
 
     }
 
   }
 
-  fclose(output_file);
 
 
 }
