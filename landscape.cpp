@@ -54,6 +54,8 @@ int main() {
 
     for (sever = p_severity_min; sever <= p_severity_max; sever += p_severity_step) {
 
+      FILE* output_file = fopen("landscape.txt", "a");
+
       printf("transm=%.3f sever=%.0f", transm, sever);   
 
       sprintf(variant_name, "COVID19 variant transm=%.3f sever=%.0f", transm, sever);
@@ -71,8 +73,8 @@ int main() {
 
       fprintf(output_file, " %.1f%%\n", pct_infected);
 
-      FILE* output_file = fopen("landscape.txt", "a");
       fprintf(output_file, "%f %f %f\n", transm, sever, pct_infected);
+
       fclose(output_file);
 
     }
