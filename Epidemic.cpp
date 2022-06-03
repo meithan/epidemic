@@ -1,4 +1,7 @@
-// Epidemic simulation
+//==============================================================================
+// Epidemic class implementation
+//==============================================================================
+
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
@@ -7,68 +10,45 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
-#include "Disease.h"
-#include "Agent.h"
 
-// =====================================================================
-// SIMULATION PARAMETERS
+#include "Epidemic.h"
 
-const int num_agents = 1000000;
-const int base_encounters = 10;
-const int num_initially_infected = 100;
+using namespace std;
 
-const bool simulate_until_no_infected = true;
-const int num_iterations = 60;
+// ---------------------------------------------------------------------
 
-char states_fname[] = "states.txt";
+// Default constructor
+Epidemic::Epidemic(int _num_agents, int _num_initially_infected, int _base_encounters, char* _states_fname, bool _full_dump) {
 
-const bool full_dump = false;
+  num_agents = _num_agents;
+  num_initially_infected = _num_initially_infected;
+  base_encounters = _base_encounters;
+  states_fname = _states_fname;
 
-// =====================================================================
-// DISEASES
-
-string name = "COVID19";
-// double transm_prob = 0.05;
-double transm_prob = 0.10;
-double latency_period = 2;
-double incubation_period = 3;
-double symptoms_duration = 5;
-double contagious_duration = (incubation_period + symptoms_duration) - latency_period;
-double max_severity = 1;
-double fatality_rate = 0.01;
-Disease* disease1 = new Disease(name, transm_prob, latency_period, contagious_duration, incubation_period, symptoms_duration, max_severity, fatality_rate);
-
-// =====================================================================
-// GLOBALS
-
-// List of agents
-std::vector<Agent*> agents;
-
-int* states_counts;
-FILE* output_file;
-int iteration;
-unsigned int global_seed;
-
-// =====================================================================
-// FUNCTIONS
+}
 
 // ---------------------------------------------------------------------
 
 // Sets the seed of the RNG
-void set_seed(unsigned int seed) {
+void Epidemic::set_seed(unsigned int seed) {
   srand(seed);
-  global_seed = seed;
+  this->seed = seed;
 }
 
 // Resets the seed of the RNG (to a new random seed)
-void reset_seed() {
+void Epidemic::reset_seed() {
   srand(time(NULL));
   set_seed(rand());
 }
 
 // ---------------------------------------------------------------------
 
-void initialize() {
+// Initializes a simulation:
+// - Resets the RNG seed
+// - Initializes states_counts
+// - Creates agents
+// - Opens output file
+void Epidemic::initialize() {
 
   reset_seed();
 
@@ -88,14 +68,15 @@ void initialize() {
 
 // ---------------------------------------------------------------------
 
-void infect_init(int num) {
+// Randomly infects 'num' agents with 'disease'
+void Epidemic::random_infect(int num, Disease* disease) {
 
   int id;
   int num_infected = 0;
   while (num_infected < num) {
     id = randint(num_agents);
     if (!agents[id]->isInfected) {
-      agents[id]->infect(disease1);
+      agents[id]->infect(disease);
       num_infected++;
     }
   }
@@ -104,7 +85,8 @@ void infect_init(int num) {
 
 // ---------------------------------------------------------------------
 
-void count_states() {
+// Counts the number of agents in each state
+void Epidemic::count_states() {
 
   int i;
   for (i = 0; i < num_states; i++) states_counts[i] = 0;
@@ -116,7 +98,8 @@ void count_states() {
 
 // ---------------------------------------------------------------------
 
-void report_states() {
+// Report states counts to screen
+void Epidemic::report_states() {
 
   for (int i = 0; i < num_states; i++) {
     printf("%s: %i (%.1f%%)\n", states_names[i].c_str(), states_counts[i], 100.0*states_counts[i]/num_agents);
@@ -126,7 +109,9 @@ void report_states() {
 
 // ---------------------------------------------------------------------
 
-void output_states() {
+// Writes currents states to the output file
+// if full_dump, writes the states of all agents; if not, only counts
+void Epidemic::output_states() {
 
   output_file = fopen(states_fname, "a");
   // fprintf(output_file, "%i ", iteration);
@@ -157,7 +142,8 @@ void output_states() {
 
 // ---------------------------------------------------------------------
 
-void socialize_agents() {
+// Makes have random encounters between each other
+void Epidemic::socialize_agents() {
 
   int id, other_id, num_encounters;
   Agent* agent;
@@ -195,7 +181,8 @@ void socialize_agents() {
 
 // ---------------------------------------------------------------------
 
-void evolve_diseases() {
+// Evolve diseases of all infected agents
+void Epidemic::evolve_diseases() {
 
   for (int i=0; i < num_agents; i++) {
     if ((agents[i]->isAlive) && (agents[i]->isInfected)) {
@@ -207,19 +194,18 @@ void evolve_diseases() {
 
 // =====================================================================
 
-int main (int argc, char** argv) {
+// Runs a full simulation
+// Set total_iteration to zero to simulate until no infected left
+void Epidemic::run_simulation(int total_iterations, bool verbose) {
 
-  initialize();
-
-  infect_init(num_initially_infected);
-
-  count_states(); report_states();
+  count_states();
   output_states();
+  if (verbose) report_states();
 
   iteration = 1;
   while (true) {
 
-    printf("----------\nday = %i\n", iteration);
+    if (verbose) printf("----------\nday = %i\n", iteration);
 
     // Make agents socialize (and spread disease)
     socialize_agents();
@@ -229,23 +215,19 @@ int main (int argc, char** argv) {
 
     // Update counts
     count_states();
-    report_states();
     output_states();
+    if (verbose) report_states();
 
     iteration++;
-    if (simulate_until_no_infected) {
+    if (total_iterations == 0) {
       if (states_counts[STATE_INFECTED] == 0) break;
     } else {
-      if (iteration == num_iterations) break;
+      if (iteration == total_iterations) break;
     }
 
   }
 
-  printf("----------\n");
-  
-  int tot_infected = num_agents - states_counts[STATE_HEALTHY];
-  printf("Population infected: %.1f%%\n", 100*(double)tot_infected/num_agents);
-  
-  return 0;
+  if (verbose) printf("----------\n");
 
 }
+ 

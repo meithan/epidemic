@@ -3,20 +3,27 @@ COMPILER= g++
 
 # User compiler flags
 #USER_FLAGS = -g -Wall -pedantic
+# USER_FLAGS= -O3 -Wall
 USER_FLAGS= -O3
 
+# Linker flags
+LDFLAGS=
+
 # ==============================================================================
 
-LDFLAGS= 
 CCFLAGS=$(USER_FLAGS)
-PROGRAMS=epidemic
+PROGRAMS=simulation
+
+# simulation
+OBJECTS=utils.o Agent.o Disease.o Epidemic.o simulation.o
 
 # ==============================================================================
 
-epidemic : epidemic.o
-	$(COMPILER) $(LDFLAGS) epidemic.o -o epidemic
+simulation : $(OBJECTS)
+	$(COMPILER) $(LDFLAGS) $(OBJECTS) -o simulation
 
-epidemic.o : Agent.h Disease.h epidemic.cpp
+%.o : %.cpp 
+	$(COMPILER) $(CCFLAGS) -c $< -o $@
 
 clean :
-	rm -f *.o $(PROGRAMS)
+	rm -f $(OBJECTS) $(PROGRAMS)
