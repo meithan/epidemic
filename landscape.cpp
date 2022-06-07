@@ -63,9 +63,7 @@ int main() {
     
       sever = severity_min + severity_step*j;
 
-      FILE* output_file = fopen("landscape.txt", "a");
-
-      printf("transm=%.3f sever=%.0f", transm, sever);   
+      printf("transm=%.3f, sever=%.0f : ", transm, sever);
 
       sprintf(variant_name, "COVID19 variant transm=%.3f sever=%.0f", transm, sever);
       variant = new Disease(0, variant_name, transm, latency_period, contagious_duration, incubation_period, symptoms_duration, sever, fatality_rate);
@@ -78,15 +76,17 @@ int main() {
       ep->random_infect(num_initially_infected, variant);
 
       ep->run_simulation(num_iterations, false);
-      
+
       int tot_infected = num_agents - ep->states_counts[STATE_HEALTHY];
       double pct_infected = 100*(double)tot_infected/num_agents;
+      printf("%.1f%%\n", pct_infected);
 
-      fprintf(output_file, " %.1f%%\n", pct_infected);
-
+      FILE* output_file = fopen("landscape.txt", "a");
       fprintf(output_file, "%f %f %f\n", transm, sever, pct_infected);
-
       fclose(output_file);
+
+      delete ep;
+      
 
     }
 
