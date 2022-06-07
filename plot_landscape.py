@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 from matplotlib import cm
 import numpy as np
+import sys
 
 data = np.loadtxt("landscape.txt")
 
@@ -15,9 +16,16 @@ values = data[:,2].reshape((NX,NY))
 xs = np.arange(len(transms))
 ys = np.arange(len(severs))
 
+min_transm = transms.min()
+max_transm = transms.max()
+step_transm = transms[1] - transms[0]
+min_sever = severs.min()
+max_sever = severs.max()
+step_sever = severs[1] - severs[0]
+
 # --------------------------------
 # Heatmap
-if True:
+def plot_heatmap():
   
   plt.figure(figsize=(6.5,8))
 
@@ -46,7 +54,7 @@ if True:
 
 # --------------------------------
 # 3D surface plot
-if True:
+def plot_surface():
 
   plt.figure(figsize=(10,10))
   ax = plt.axes(projection='3d')
@@ -69,7 +77,7 @@ if True:
 
 # --------------------------------
 # 2D curves
-if True:
+def plot_curves():
 
   plt.figure(figsize=(14,6))
 
@@ -103,5 +111,51 @@ if True:
   plt.tight_layout()
 
 # --------------------------------
+# 3D bar plot
+def plot_3d_bar_plot():
+
+  xs = np.arange(len(transms))
+  ys = np.arange(len(severs))
+
+  X = []; Y = []; Z = []
+  colors = []
+  for i in range(len(transms)):
+    for j in range(len(severs)):
+      X.append(transms[i])
+      Y.append(severs[j])
+      Z.append(values[i,j])
+      R = 1 - (severs[j]-min_sever)/(max_sever-min_sever)
+      G = 0
+      B = (transms[i]-min_transm)/(max_transm-min_transm)
+      colors.append((R,G,B))
+  X = np.array(X); Y = np.array(Y); Z = np.array(Z)
+  zero = np.zeros_like(Z)
+
+  plt.figure(figsize=(10,10))
+  ax = plt.axes(projection='3d')
+
+  # plt.xticks(xs, transms)
+  # plt.yticks(ys, severs)
+
+  dx = step_transm/2
+  dy = step_sever/2
+  ax.bar3d(X-dx/2, Y-dy/2, zero, dx, dy, Z, colors, shade=False)
+
+  ax.set_xlabel("Transm. prob.")
+  ax.set_ylabel("Severity")
+  ax.set_zlabel("Success (%% infected)")
+  ax.view_init(elev=35, azim=135)
+
+  if "--save" in sys.argv:
+    fname = "../competition_3dbars.png"
+    plt.savefig(fname)
+    print("Wrote", fname)
+
+# --------------------------------
+
+# plot_heatmap()
+# plot_surface()
+# plot_curves()
+plot_3d_bar_plot()
 
 plt.show()
