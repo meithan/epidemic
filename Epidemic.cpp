@@ -17,13 +17,14 @@
 // ---------------------------------------------------------------------
 
 // Default constructor
-Epidemic::Epidemic(int _num_agents, std::vector<Disease*>& _diseases, int _base_encounters, char* _states_fname, bool _full_dump) {
+Epidemic::Epidemic(int _num_agents, std::vector<Disease*>& _diseases, int _base_encounters, char* _states_fname, bool _full_output) {
 
   num_agents = _num_agents;
   diseases = _diseases;
   num_diseases = diseases.size();
   base_encounters = _base_encounters;
   states_fname = _states_fname;
+  full_output = _full_output;
 
 }
 
@@ -72,22 +73,23 @@ void Epidemic::initialize() {
     agents.push_back(agent);
   }
 
-  // Open output file, if any
+  // Open new output file, if given
   if ((states_fname != NULL) && (states_fname[0] != '\0')) {
     
     output_file = fopen(states_fname, "w");
     if (output_file != NULL) {
       do_output = true;
       fclose(output_file);
+      // printf("Writing to %s\n", states_fname);
     } else {
-      printf("Couldn't open file %s; skipping output\n", states_fname);
       do_output = false;
+      printf("Couldn't open file %s; skipping output\n", states_fname);
     }
 
   } else {
 
-    printf("No output file given\n");
     do_output = false;
+    printf("No output file given\n");
 
   }
 
@@ -145,7 +147,7 @@ void Epidemic::report_states() {
 void Epidemic::report_diseases() {
 
   for (int i = 0; i < num_diseases; i++) {
-    printf("%s: %i cur, %i cumul\n", diseases[i]->name.c_str(), diseases[i]->curr_infected, diseases[i]->cumul_infected);
+    printf("%s: cur %i, cumul %i\n", diseases[i]->name.c_str(), diseases[i]->curr_infected, diseases[i]->cumul_infected);
   }
 
 }
@@ -160,10 +162,10 @@ void Epidemic::output_states() {
 
   output_file = fopen(states_fname, "a");
   
-  if (full_dump) {
+  if (full_output) {
     
     // Write full agent states
-    for (int i=0; i < num_agents; i++) {
+    for (int i = 0; i < num_agents; i++) {
       fprintf(output_file, "%i", agents[i]->state);
       if (i < num_agents-1) fprintf(output_file, " ");
     }
@@ -171,11 +173,18 @@ void Epidemic::output_states() {
 
   } else {
     
-    // Write only total counts
-    for (int i=0; i < num_states; i++) {
-      fprintf(output_file, "%i", states_counts[i]);
-      if (i < num_states-1) fprintf(output_file, " ");
+    // Write only total counts:
+    // healthy tot_infected recovered dead diseases_counts cumul_dis_counts
+    fprintf(output_file, "%i", states_counts[STATE_HEALTHY]);
+    fprintf(output_file, " %i", states_counts[STATE_INFECTED]);
+    fprintf(output_file, " %i", states_counts[STATE_RECOVERED]);
+    fprintf(output_file, " %i", states_counts[STATE_DEAD]);
+    for (int v = 0; v < diseases.size(); v++) {
+      fprintf(output_file, " %i", diseases[v]->curr_infected);
     }
+    for (int v = 0; v < diseases.size(); v++) {
+      fprintf(output_file, " %i", diseases[v]->cumul_infected);
+    }    
     fprintf(output_file, "\n");
 
   }

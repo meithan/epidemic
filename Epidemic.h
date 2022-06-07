@@ -22,7 +22,7 @@ class Epidemic {
   int base_encounters;           // Base number of encounters for the agents
 
   char* states_fname;            // Filename for the states
-  bool full_dump = false;        // Dump states of all agents, or just counts?
+  bool full_output = false;      // Write states of all agents, or just counts?
 
   // Class globals
 
