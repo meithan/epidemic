@@ -12,20 +12,24 @@ LDFLAGS=
 # ==============================================================================
 
 CCFLAGS=$(USER_FLAGS)
-PROGRAMS=simulation lanscape
+PROGRAMS=simulation landscape competition
 
 # Object files
 BASE_OBJECTS=utils.o Agent.o Disease.o Epidemic.o
 SIMUL_OBJECTS=$(BASE_OBJECTS) simulation.o
 LAND_OBJECTS=$(BASE_OBJECTS) landscape.o
+COMPETITION_OBJECTS=$(BASE_OBJECTS) competition.o
 
 # ==============================================================================
 
 simulation : $(SIMUL_OBJECTS)
 	$(COMPILER) $(LDFLAGS) $(SIMUL_OBJECTS) -o simulation
 
-landscape : $(LAND_OBJECTS) landscape.o
+landscape : $(LAND_OBJECTS)
 	$(COMPILER) $(LDFLAGS) $(LAND_OBJECTS) -o landscape
+
+competition : $(COMPETITION_OBJECTS)
+	$(COMPILER) $(LDFLAGS) $(COMPETITION_OBJECTS) -o competition
 
 %.o : %.cpp 
 	$(COMPILER) $(CCFLAGS) -c $< -o $@

@@ -141,6 +141,17 @@ void Epidemic::report_states() {
 
 // ---------------------------------------------------------------------
 
+// Report diseases counts
+void Epidemic::report_diseases() {
+
+  for (int i = 0; i < num_diseases; i++) {
+    printf("%s: %i cur, %i cumul\n", diseases[i]->name.c_str(), diseases[i]->curr_infected, diseases[i]->cumul_infected);
+  }
+
+}
+
+// ---------------------------------------------------------------------
+
 // Writes currents states to the output file
 // if full_dump, writes the states of all agents; if not, only counts
 void Epidemic::output_states() {

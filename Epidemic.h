@@ -59,6 +59,9 @@ class Epidemic {
   
   // Print state counts
   void report_states();
+
+  // Print disease counts
+  void report_diseases();
   
   // Write states to file
   void output_states();
