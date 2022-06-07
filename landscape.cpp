@@ -27,32 +27,41 @@ int main() {
   // =====================================================================
   // PARAMETER RANGES
 
-  const double p_transm_min = 0.01;
-  const double p_transm_max = 0.08;
-  const double p_transm_step = 0.01;
+  const double transm_min = 0.01;
+  const double transm_max = 0.08;
+  const double transm_step = 0.01;
 
-  const double p_severity_min = 1;
-  const double p_severity_max = 10;
-  const double p_severity_step = 1;
+  const double severity_min = 1;
+  const double severity_max = 10;
+  const double severity_step = 1;
 
-  // =====================================================================
-  // Run simulations
+  const int num_transm = int((transm_max - transm_min)/transm_step + 1);
+  const int num_sever = int((severity_max - severity_min)/severity_step + 1);
+  const int num_variants = num_transm * num_sever;
+
+  // Common variant parameters
 
   const double latency_period = 2;
   const double incubation_period = 3;
   const double symptoms_duration = 5;
   const double contagious_duration = (incubation_period + symptoms_duration) - latency_period;
-  const double max_dis_severity = 2;
   const double fatality_rate = 0.01;
+
+  // =====================================================================
+  // Run simulations
 
   Epidemic* ep;
   Disease* variant;
   char variant_name[100];
   double transm, sever;
  
-  for (transm = p_transm_min; transm <= p_transm_max; transm += p_transm_step) {
+  for (int i = 0; i < num_transm; i++) {
+    
+    transm = transm_min + transm_step*i;
 
-    for (sever = p_severity_min; sever <= p_severity_max; sever += p_severity_step) {
+    for (int j = 0; j < num_sever; j++) {
+    
+      sever = severity_min + severity_step*j;
 
       FILE* output_file = fopen("landscape.txt", "a");
 
