@@ -11,6 +11,7 @@ class Disease {
   public:
   
   // User-defined properties of the disease
+  int id;                       // A unique numeric ID for this variant
   std::string name;
   double transm_prob;           // Transmission probability (per encounter)
   double latency_period;        // Onset of contagiousness (days after infection)
@@ -23,12 +24,19 @@ class Disease {
   // Derived properties
   double total_duration;        // Total duration of disease
   double daily_death_prob;      // The daily probability of death
+
+  // Runtime variables
+  int curr_infected;            // Agents currently infected with this disease
+  int cumul_infected;           // Cumulative agents ever infected
   
   // Default constructor
-  Disease(std::string p_name, double _transm_prob, double _latency_period, double _contagious_duration, double _incubation_period, double _symptoms_duration, double _max_severity, double _fatality_rate);
+  Disease(int _id, std::string p_name, double _transm_prob, double _latency_period, double _contagious_duration, double _incubation_period, double _symptoms_duration, double _max_severity, double _fatality_rate);
 
   // Returns the symptoms severity this many days after initial infection
   double get_severity(double days);
+
+  // Resets counts
+  void reset_counts();
   
 };
   

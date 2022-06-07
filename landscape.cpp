@@ -68,9 +68,11 @@ int main() {
       printf("transm=%.3f sever=%.0f", transm, sever);   
 
       sprintf(variant_name, "COVID19 variant transm=%.3f sever=%.0f", transm, sever);
-      variant = new Disease(variant_name, transm, latency_period, contagious_duration, incubation_period, symptoms_duration, sever, fatality_rate);
+      variant = new Disease(0, variant_name, transm, latency_period, contagious_duration, incubation_period, symptoms_duration, sever, fatality_rate);
+      std::vector<Disease*> diseases;
+      diseases.push_back(variant);
 
-      ep = new Epidemic(num_agents, num_initially_infected, base_encounters, states_fname, full_dump);
+      ep = new Epidemic(num_agents, diseases, base_encounters, states_fname, full_dump);
 
       ep->initialize();
       ep->random_infect(num_initially_infected, variant);

@@ -14,20 +14,21 @@ int main() {
   // SIMULATION PARAMETERS
 
   const int num_agents = 1e6;
+  const int num_variants = 1;
   const int num_initially_infected = 1000;
   const int base_encounters = 10;
 
   const int num_iterations = 0;
   bool verbose = true;
 
-  char states_fname[] = "states.txt";
+  char states_fname[] = "";
 
   const bool full_dump = false;
 
   // =====================================================================
-  // DISEASE
+  // Create disease
 
-  string name = "COVID19 variant 1";
+  string name = "COVID19";
   double transm_prob = 0.10;
   // double transm_prob = 0.10;
   double latency_period = 2;
@@ -36,20 +37,27 @@ int main() {
   double contagious_duration = (incubation_period + symptoms_duration) - latency_period;
   double max_severity = 2;
   double fatality_rate = 0.01;
-  Disease* variant1 = new Disease(name, transm_prob, latency_period, contagious_duration, incubation_period, symptoms_duration, max_severity, fatality_rate);
+  Disease* disease = new Disease(0, name, transm_prob, latency_period, contagious_duration, incubation_period, symptoms_duration, max_severity, fatality_rate);
+
+  std::vector<Disease*> diseases;
+  diseases.push_back(disease);
 
   // =====================================================================
   // Run simulation
 
-  Epidemic* ep = new Epidemic(num_agents, num_initially_infected, base_encounters, states_fname, full_dump);
+  Epidemic* ep = new Epidemic(num_agents, diseases, base_encounters, states_fname, full_dump);
 
   ep->initialize();
-  ep->random_infect(num_initially_infected, variant1);
+  
+  ep->random_infect(num_initially_infected, disease); 
 
   ep->run_simulation(num_iterations, verbose);
   
-  int tot_infected = num_agents - ep->states_counts[STATE_HEALTHY];
-  double pct_infected = 100*(double)tot_infected/num_agents;
-  printf("Population infected: %i : %.1f%%\n", tot_infected, pct_infected);
+  int tot_cumul_infected = 0;
+  for (int i = 0; i < diseases.size(); i++) {
+    tot_cumul_infected += disease->cumul_infected;
+    printf("%s: %i = %.1f%%\n", diseases[i]->name.c_str(), diseases[i]->cumul_infected, 100.0*diseases[i]->cumul_infected/num_agents);
+  }
+
 
 }

@@ -9,7 +9,8 @@
 using namespace std;
 
 // Default constructor
-Disease::Disease(string _name, double _transm_prob, double _latency_period, double _contagious_duration, double _incubation_period, double _symptoms_duration, double _max_severity, double _fatality_rate) {
+Disease::Disease(int _id, string _name, double _transm_prob, double _latency_period, double _contagious_duration, double _incubation_period, double _symptoms_duration, double _max_severity, double _fatality_rate) {
+  id = _id;
   name = _name;
   transm_prob = _transm_prob;
   latency_period = _latency_period;
@@ -20,6 +21,7 @@ Disease::Disease(string _name, double _transm_prob, double _latency_period, doub
   fatality_rate = _fatality_rate;
   total_duration = incubation_period + symptoms_duration;
   daily_death_prob = fatality_rate / total_duration;
+  reset_counts();
 }
 
   // Returns the symptoms severity this many days after initial infection
@@ -41,4 +43,11 @@ double Disease::get_severity(double days) {
     return severity;
   
   }
+}
+
+void Disease::reset_counts() {
+
+  curr_infected = 0;
+  cumul_infected = 0;
+
 }

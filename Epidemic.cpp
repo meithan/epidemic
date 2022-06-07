@@ -11,17 +11,17 @@
 #include <fstream>
 #include <vector>
 
+#include "Disease.h"
 #include "Epidemic.h"
-
-using namespace std;
 
 // ---------------------------------------------------------------------
 
 // Default constructor
-Epidemic::Epidemic(int _num_agents, int _num_initially_infected, int _base_encounters, char* _states_fname, bool _full_dump) {
+Epidemic::Epidemic(int _num_agents, std::vector<Disease*>& _diseases, int _base_encounters, char* _states_fname, bool _full_dump) {
 
   num_agents = _num_agents;
-  num_initially_infected = _num_initially_infected;
+  diseases = _diseases;
+  num_diseases = diseases.size();
   base_encounters = _base_encounters;
   states_fname = _states_fname;
 
@@ -52,16 +52,44 @@ void Epidemic::initialize() {
 
   reset_seed();
 
+  // Reset state counts
   states_counts = new int[num_states];
+  for (int i = 0; i < num_states; i++) {
+    states_counts[i] = 0;
+  }
 
+  // Reset disease counts
+  for (int i = 0; i < diseases.size(); i++) {
+    diseases[i]->cumul_infected = 0;
+    diseases[i]->curr_infected = 0;
+  }
+
+  // Create agents
+  agents.clear();
   Agent* agent;
   for (int count = 1; count <= num_agents; count++) {
     agent = new Agent(count, base_encounters);
     agents.push_back(agent);
   }
 
-  output_file = fopen(states_fname, "w");
-  fclose(output_file);
+  // Open output file, if any
+  if ((states_fname != NULL) && (states_fname[0] != '\0')) {
+    
+    output_file = fopen(states_fname, "w");
+    if (output_file != NULL) {
+      do_output = true;
+      fclose(output_file);
+    } else {
+      printf("Couldn't open file %s; skipping output\n", states_fname);
+      do_output = false;
+    }
+
+  } else {
+
+    printf("No output file given\n");
+    do_output = false;
+
+  }
 
 
 }
@@ -86,12 +114,16 @@ void Epidemic::random_infect(int num, Disease* disease) {
 // ---------------------------------------------------------------------
 
 // Counts the number of agents in each state
-void Epidemic::count_states() {
+void Epidemic::update_counts() {
 
-  int i;
-  for (i = 0; i < num_states; i++) states_counts[i] = 0;
-  for (i = 0; i < (int)agents.size(); i++) {
+  for (int i = 0; i < num_states; i++) states_counts[i] = 0;
+  for (int i = 0; i < diseases.size(); i++) diseases[i]->curr_infected = 0;
+
+  for (int i = 0; i < (int)agents.size(); i++) {
     states_counts[agents[i]->state] += 1;
+    if (agents[i]->isInfected) {
+      agents[i]->disease->curr_infected += 1; 
+    }
   }
 
 }
@@ -113,8 +145,9 @@ void Epidemic::report_states() {
 // if full_dump, writes the states of all agents; if not, only counts
 void Epidemic::output_states() {
 
+  if (!do_output) return;
+
   output_file = fopen(states_fname, "a");
-  // fprintf(output_file, "%i ", iteration);
   
   if (full_dump) {
     
@@ -168,6 +201,7 @@ void Epidemic::socialize_agents() {
         if (other->state == STATE_HEALTHY) {
           if (randreal() <= agent->disease->transm_prob) {
             other->infect(agent->disease);
+            other->disease->cumul_infected += 1;
           }
         }
 
@@ -196,11 +230,16 @@ void Epidemic::evolve_diseases() {
 
 // Runs a full simulation
 // Set total_iteration to zero to simulate until no infected left
+// Assumes agents have already been created and infected
 void Epidemic::run_simulation(int total_iterations, bool verbose) {
 
-  count_states();
-  output_states();
-  if (verbose) report_states();
+  update_counts();
+  if (do_output) output_states();
+  
+  if (verbose) {
+    printf("----------\nstart\n");
+    report_states();
+  }
 
   iteration = 1;
   while (true) {
@@ -214,8 +253,9 @@ void Epidemic::run_simulation(int total_iterations, bool verbose) {
     evolve_diseases();
 
     // Update counts
-    count_states();
-    output_states();
+    update_counts();
+    
+    if (do_output) output_states();
     if (verbose) report_states();
 
     iteration++;
@@ -227,7 +267,8 @@ void Epidemic::run_simulation(int total_iterations, bool verbose) {
 
   }
 
-  if (verbose) printf("----------\n");
+  if (verbose) printf("----------\nSimulation completed\n");
+
 
 }
  
