@@ -13,13 +13,13 @@ int main() {
   // =====================================================================
   // GENERAL SIMULATION PARAMETERS
 
-  const int num_agents = 1e6;
+  const int num_agents = 10e6;
   const int num_initially_infected = 1000;    // per variant
   const int base_encounters = 10;
 
   bool verbose = true;
 
-  char states_fname[] = "";
+  char states_fname[] = "competition.txt";
 
   const bool full_dump = false;
 
@@ -52,20 +52,24 @@ int main() {
   Disease* variant;
   char variant_name[100];
   double transm, sever;
+  FILE* file;
 
   // Create variants
+  file = fopen("variants.txt", "w");
   std::vector<Disease*> variants;
   int next_id = 0;
   for (int i = 0; i < num_transm; i++) {   
     transm = transm_min + transm_step*i;
     for (int j = 0; j < num_sever; j++) {
       sever = severity_min + severity_step*j;  
-      sprintf(variant_name, "Variant %i (transm=%.3f sever=%.0f)", next_id, transm, sever);
+      sprintf(variant_name, "Variant %i (t=%f, s=%f)", next_id, transm, sever);
+      fprintf(file, "%i %f %f\n", next_id, transm, sever);
       variant = new Disease(next_id, variant_name, transm, latency_period, contagious_duration, incubation_period, symptoms_duration, sever, fatality_rate);
       variants.push_back(variant);
       next_id++;
     }
   }
+  fclose(file);
    
   ep = new Epidemic(num_agents, variants, base_encounters, states_fname, full_dump);
 
@@ -84,6 +88,7 @@ int main() {
   // Run simulation
   ep->run_simulation(0, true);
   
+  // Report results
   ep->report_diseases();
 
 }
