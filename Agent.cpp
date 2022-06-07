@@ -28,10 +28,7 @@ void Agent::repr(char* retbuf) {
 
 // Infects the agent with the given disease
 void Agent::infect(Disease* _disease) {
-  if (isInfected) {
-    // Already infected!
-    return;
-  }
+  if ((!isAlive) || isInfected || isImmune) return;
   isInfected = true;
   state = STATE_INFECTED;
   days_infected = 0;
