@@ -52,6 +52,7 @@ int main() {
 
   Epidemic* ep;
   Disease* variant;
+  std::vector<Disease*> diseases;
   char variant_name[100];
   double transm, sever;
  
@@ -67,7 +68,8 @@ int main() {
 
       sprintf(variant_name, "COVID19 variant transm=%.3f sever=%.0f", transm, sever);
       variant = new Disease(0, variant_name, transm, latency_period, contagious_duration, incubation_period, symptoms_duration, sever, fatality_rate);
-      std::vector<Disease*> diseases;
+
+      diseases.clear();
       diseases.push_back(variant);
 
       ep = new Epidemic(num_agents, diseases, base_encounters, states_fname, full_dump);
