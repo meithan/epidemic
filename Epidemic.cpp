@@ -199,6 +199,7 @@ void Epidemic::output_states() {
 void Epidemic::socialize_agents() {
 
   int id, other_id, num_encounters;
+  double prob;
   Agent* agent;
   Agent* other;
   
@@ -219,7 +220,8 @@ void Epidemic::socialize_agents() {
         // If the other agent is healthy, possibly spread disease
         other = agents[other_id];
         if (other->state == STATE_HEALTHY) {
-          if (randreal() <= agent->disease->transm_prob) {
+          prob = agent->disease->get_transm_prob(agent->days_infected);
+          if (randreal() <= prob) {
             other->infect(agent->disease);
             other->disease->cumul_infected += 1;
           }

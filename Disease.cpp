@@ -24,9 +24,31 @@ Disease::Disease(int _id, string _name, double _transm_prob, double _latency_per
   reset_counts();
 }
 
-  // Returns the symptoms severity this many days after initial infection
+// Returns the encounter transmission probabilty this many days after infection
+double Disease::get_transm_prob(double days) {
+  if ((days < latency_period) || (days > total_duration)) {
+    
+    return 0.0;
+  
+  } else {
+    
+    double days_contagious = days - latency_period;
+
+    // Constant
+    // double prob = transm_prob;
+
+    // Weight by current severity
+    double sever = get_severity(days);
+    double prob = transm_prob*(1+0.05*(5-sever));
+
+    return prob;
+  
+  }
+}
+
+// Returns the symptoms severity this many days after initial infection
 double Disease::get_severity(double days) {
-  if ((days < incubation_period) && (days > total_duration)) {
+  if ((days < incubation_period) || (days > total_duration)) {
     
     return 0.0;
   

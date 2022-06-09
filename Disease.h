@@ -32,6 +32,9 @@ class Disease {
   // Default constructor
   Disease(int _id, std::string p_name, double _transm_prob, double _latency_period, double _contagious_duration, double _incubation_period, double _symptoms_duration, double _max_severity, double _fatality_rate);
 
+  // Returns the encounter transmission probabilty this many days after infection
+  double get_transm_prob(double days);
+
   // Returns the symptoms severity this many days after initial infection
   double get_severity(double days);
 
